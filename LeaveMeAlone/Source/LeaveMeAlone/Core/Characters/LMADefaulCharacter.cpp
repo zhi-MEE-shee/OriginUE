@@ -5,9 +5,12 @@
 #include "Camera/CameraComponent.h"
 #include "Components/DecalComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/LMAHealthComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Engine/Engine.h"
 
 ALMADefaulCharacter::ALMADefaulCharacter()
 {
@@ -32,6 +35,9 @@ ALMADefaulCharacter::ALMADefaulCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+
+	HealthComponent = CreateDefaultSubobject<ULMAHealthComponent>("HealthComponent");
+	CurrentStamina = MaxStamina;
 }
 
 
@@ -47,7 +53,9 @@ void ALMADefaulCharacter::BeginPlay()
 			Cursor = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), CursorMaterial, CursorSize, FVector(0));
 		}
 	}
-	
+	HealthComponent->OnDeath.AddUObject(this, &ALMADefaulCharacter::OnDeath);
+	OnHealthChanged(HealthComponent->GetHealth());
+	HealthComponent->OnHealthChanged.AddUObject(this, &ALMADefaulCharacter::OnHealthChanged);
 }
 
 void ALMADefaulCharacter::MoveForward(float Value)
@@ -72,6 +80,13 @@ void ALMADefaulCharacter::CameraZoom(float Value)
 void ALMADefaulCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (HealthComponent->IsAlive()) {
+		RotationPlayerOnCursor();
+	}
+}
+
+void ALMADefaulCharacter::RotationPlayerOnCursor()
+{
 	if (GetWorld())
 	{
 		APlayerController* PlayerControler = UGameplayStatics::GetPlayerController(GetWorld(), 0);
@@ -88,7 +103,6 @@ void ALMADefaulCharacter::Tick(float DeltaTime)
 		}
 	}
 }
-
 	
 
 void ALMADefaulCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -98,6 +112,64 @@ void ALMADefaulCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAxis("MoveForward", this, &ALMADefaulCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ALMADefaulCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("CameraZoom", this, & ALMADefaulCharacter::CameraZoom);
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ALMADefaulCharacter::StartSprint);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ALMADefaulCharacter::StopSprint);
 	
 }
 
+void ALMADefaulCharacter::OnDeath()
+{
+	Cursor->DestroyRenderState_Concurrent();
+	PlayAnimMontage(DeathMontage);
+	GetCharacterMovement()->DisableMovement();
+	SetLifeSpan(5.0f);
+
+	if (Controller)
+	{
+		Controller->ChangeState(NAME_Spectating);
+	}
+}
+
+void ALMADefaulCharacter::OnHealthChanged(float NewHealth)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Health = %f"), NewHealth));
+}
+
+void ALMADefaulCharacter::StartSprint()
+{
+	if (CurrentStamina > 0 && GetVelocity().Length() > 0) {
+		IsSprinting = true;
+		GetCharacterMovement()->MaxWalkSpeed = SprintVelocity;
+		GetWorld()->GetTimerManager().SetTimer(TimerToDecreaseStamina, this, &ALMADefaulCharacter::StaminaDecrease, 0.5F, true);
+	}
+}
+
+void ALMADefaulCharacter::StopSprint()
+{
+	IsSprinting = false;
+	GetCharacterMovement()->MaxWalkSpeed = Velocity;
+	GetWorld()->GetTimerManager().ClearTimer(TimerToDecreaseStamina);
+	GetWorld()->GetTimerManager().SetTimer(TimerToIncreaseStamina, this, &ALMADefaulCharacter::StaminaIncrease, 0.5f, true);
+}
+
+void ALMADefaulCharacter::StaminaIncrease()
+{
+	CurrentStamina = FMath::Clamp(CurrentStamina + StaminaTick, 0.0f, MaxStamina);
+	GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Red, FString::Printf(TEXT("Stamina = %f"), CurrentStamina));	
+	if (CurrentStamina == MaxStamina)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(TimerToIncreaseStamina);
+	}
+}
+
+void ALMADefaulCharacter::StaminaDecrease()
+{
+	CurrentStamina = FMath::Clamp(CurrentStamina - (StaminaTick * 2), 0.0f, MaxStamina);
+	GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Red, FString::Printf(TEXT("Stamina = %f"), CurrentStamina));
+
+	if (CurrentStamina < 0.001 || FMath::IsNearlyZero(GetVelocity().Length()))
+	{
+		StopSprint();
+	}
+
+}
