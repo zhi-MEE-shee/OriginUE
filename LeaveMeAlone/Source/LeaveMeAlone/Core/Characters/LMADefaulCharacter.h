@@ -11,6 +11,7 @@ class USpringArmComponent;
 class UMaterialInterface;
 class ULMAHealthComponent;
 class UAnimMontage;
+class ULMAWeaponComponent;
 
 UCLASS()
 class LEAVEMEALONE_API ALMADefaulCharacter : public ACharacter
@@ -45,6 +46,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* DeathMontage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+	ULMAWeaponComponent* WeaponComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Moving settings")
 	float MaxStamina = 100;

@@ -6,6 +6,7 @@
 #include "Components/DecalComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/LMAHealthComponent.h"
+#include "Components/LMAWeaponComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -38,6 +39,8 @@ ALMADefaulCharacter::ALMADefaulCharacter()
 
 	HealthComponent = CreateDefaultSubobject<ULMAHealthComponent>("HealthComponent");
 	CurrentStamina = MaxStamina;
+
+	WeaponComponent = CreateDefaultSubobject<ULMAWeaponComponent>("Weapon");
 }
 
 
@@ -114,6 +117,9 @@ void ALMADefaulCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAxis("CameraZoom", this, & ALMADefaulCharacter::CameraZoom);
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ALMADefaulCharacter::StartSprint);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ALMADefaulCharacter::StopSprint);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, WeaponComponent, &ULMAWeaponComponent::Fire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, WeaponComponent, &ULMAWeaponComponent::EndFire);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, WeaponComponent, &ULMAWeaponComponent::Reload);
 	
 }
 
@@ -139,6 +145,9 @@ void ALMADefaulCharacter::StartSprint()
 {
 	if (CurrentStamina > 0 && GetVelocity().Length() > 0) {
 		IsSprinting = true;
+		if (IsValid(WeaponComponent)) {
+			WeaponComponent->SetSprintState(IsSprinting);
+		}
 		GetCharacterMovement()->MaxWalkSpeed = SprintVelocity;
 		GetWorld()->GetTimerManager().SetTimer(TimerToDecreaseStamina, this, &ALMADefaulCharacter::StaminaDecrease, 0.5F, true);
 	}
@@ -147,6 +156,9 @@ void ALMADefaulCharacter::StartSprint()
 void ALMADefaulCharacter::StopSprint()
 {
 	IsSprinting = false;
+	if (IsValid(WeaponComponent)) {
+		WeaponComponent->SetSprintState(IsSprinting);
+	}
 	GetCharacterMovement()->MaxWalkSpeed = Velocity;
 	GetWorld()->GetTimerManager().ClearTimer(TimerToDecreaseStamina);
 	GetWorld()->GetTimerManager().SetTimer(TimerToIncreaseStamina, this, &ALMADefaulCharacter::StaminaIncrease, 0.5f, true);
