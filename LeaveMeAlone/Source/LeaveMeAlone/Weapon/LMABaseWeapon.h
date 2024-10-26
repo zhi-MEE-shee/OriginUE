@@ -58,7 +58,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Sockets")
 	FName MazzelSocket = "Muzzle";
 
-	float ShootRate = 0.3f;
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float ShootRate = 0;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

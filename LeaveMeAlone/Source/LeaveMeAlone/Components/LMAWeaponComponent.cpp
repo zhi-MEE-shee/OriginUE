@@ -64,7 +64,7 @@ void ULMAWeaponComponent::EndFire()
 	if (IsValid(Weapon))
 	{
 		Weapon->EndFire();
-		//IsShooting = false;
+		IsShooting = false;
 	}
 }
 

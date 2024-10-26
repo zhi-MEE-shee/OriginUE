@@ -147,6 +147,7 @@ void ALMADefaulCharacter::StartSprint()
 		IsSprinting = true;
 		if (IsValid(WeaponComponent)) {
 			WeaponComponent->SetSprintState(IsSprinting);
+			WeaponComponent->EndFire();
 		}
 		GetCharacterMovement()->MaxWalkSpeed = SprintVelocity;
 		GetWorld()->GetTimerManager().SetTimer(TimerToDecreaseStamina, this, &ALMADefaulCharacter::StaminaDecrease, 0.5F, true);

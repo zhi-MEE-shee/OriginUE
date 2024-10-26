@@ -23,6 +23,7 @@ void ALMABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentAmmoWeapon = AmmoWeapon;
+	ShootRate = 0.3f;
 }
 
 // Called every frame
