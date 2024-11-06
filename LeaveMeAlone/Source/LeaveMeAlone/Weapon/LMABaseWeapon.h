@@ -41,6 +41,8 @@ public:
 	bool IsCurrentClipEmpty() const;
 	bool IsCurrentClipFull() const;
 
+	FAmmoWeapon GetCurrentAmmoWeapon() const { return CurrentAmmoWeapon; }
+
 	FOnNotifyClipIsEmpty OnNotifyClipIsEmpty;
 	FOnNotifyOpenedFire OnNotifyOpenedFire;
 

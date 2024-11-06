@@ -57,8 +57,8 @@ void ALMADefaulCharacter::BeginPlay()
 		}
 	}
 	HealthComponent->OnDeath.AddUObject(this, &ALMADefaulCharacter::OnDeath);
-	OnHealthChanged(HealthComponent->GetHealth());
-	HealthComponent->OnHealthChanged.AddUObject(this, &ALMADefaulCharacter::OnHealthChanged);
+//	OnHealthChanged(HealthComponent->GetHealth());
+//	HealthComponent->OnHealthChanged.AddUObject(this, &ALMADefaulCharacter::OnHealthChanged);
 }
 
 void ALMADefaulCharacter::MoveForward(float Value)
