@@ -28,6 +28,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	float GetStamina() { return CurrentStamina; };
 
+	UFUNCTION()
+	void OnDeath();
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Component")
 	UCameraComponent* Camera;
@@ -89,7 +92,7 @@ private:
 
 	//*FUNCTIONS*//
 
-	void OnDeath();
+
 	void OnHealthChanged(float NewHealth);
 	void RotationPlayerOnCursor();
 

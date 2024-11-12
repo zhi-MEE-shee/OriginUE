@@ -56,7 +56,7 @@ void ALMADefaulCharacter::BeginPlay()
 			Cursor = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), CursorMaterial, CursorSize, FVector(0));
 		}
 	}
-	HealthComponent->OnDeath.AddUObject(this, &ALMADefaulCharacter::OnDeath);
+//	HealthComponent->OnDeath.AddDynamic(this, &ALMADefaulCharacter::OnDeath);
 //	OnHealthChanged(HealthComponent->GetHealth());
 //	HealthComponent->OnHealthChanged.AddUObject(this, &ALMADefaulCharacter::OnHealthChanged);
 }
